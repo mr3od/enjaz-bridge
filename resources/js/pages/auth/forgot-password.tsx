@@ -8,13 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
-import { email } from '@/routes/password';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
         <AuthLayout
             title="Forgot password"
-            description="Enter your email to receive a password reset link"
+            description="Enter your phone to receive a password reset link"
         >
             <Head title="Forgot password" />
 
@@ -25,21 +24,26 @@ export default function ForgotPassword({ status }: { status?: string }) {
             )}
 
             <div className="space-y-6">
-                <Form {...email.form()}>
+                <Form
+                    action="/phone/forgot-password"
+                    method="post"
+                >
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="phone">Phone number</Label>
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    autoComplete="off"
+                                    id="phone"
+                                    type="tel"
+                                    name="phone"
+                                    autoComplete="tel"
                                     autoFocus
-                                    placeholder="email@example.com"
+                                    defaultValue="+967"
+                                    placeholder="+9677XXXXXXXX"
+                                    dir="ltr"
                                 />
 
-                                <InputError message={errors.email} />
+                                <InputError message={errors.phone} />
                             </div>
 
                             <div className="my-6 flex items-center justify-start">
@@ -51,7 +55,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     {processing && (
                                         <LoaderCircle className="h-4 w-4 animate-spin" />
                                     )}
-                                    Email password reset link
+                                    Send password reset link
                                 </Button>
                             </div>
                         </>

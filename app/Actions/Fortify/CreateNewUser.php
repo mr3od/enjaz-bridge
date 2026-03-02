@@ -26,8 +26,14 @@ class CreateNewUser implements CreatesNewUsers
 
         return User::create([
             'name' => $input['name'],
-            'email' => $input['email'],
+            'phone' => $input['phone'],
+            'email' => $this->passwordBrokerEmail($input['phone']),
             'password' => $input['password'],
         ]);
+    }
+
+    private function passwordBrokerEmail(string $phone): string
+    {
+        return sprintf('%s@phone.enjaz.local', $phone);
     }
 }

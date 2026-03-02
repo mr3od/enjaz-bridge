@@ -1,29 +1,25 @@
 <?php
 
+use App\Models\OtpCode;
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Support\Facades\Notification;
 
 test('sends verification notification', function () {
-    Notification::fake();
-
     $user = User::factory()->unverified()->create();
 
     $this->actingAs($user)
         ->post(route('verification.send'))
         ->assertRedirect(route('home'));
 
-    Notification::assertSentTo($user, VerifyEmail::class);
+    expect(OtpCode::query()
+        ->where('phone', $user->phone)
+        ->where('purpose', 'phone_verification')
+        ->exists())->toBeTrue();
 });
 
-test('does not send verification notification if email is verified', function () {
-    Notification::fake();
-
+test('does not send verification notification if phone is verified', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
         ->post(route('verification.send'))
         ->assertRedirect(route('dashboard', absolute: false));
-
-    Notification::assertNothingSent();
 });

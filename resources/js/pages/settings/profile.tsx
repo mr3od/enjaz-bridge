@@ -21,10 +21,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Profile({
-    mustVerifyEmail,
+    mustVerifyPhone,
     status,
 }: {
-    mustVerifyEmail: boolean;
+    mustVerifyPhone: boolean;
     status?: string;
 }) {
     const { auth } = usePage().props;
@@ -40,7 +40,7 @@ export default function Profile({
                     <Heading
                         variant="small"
                         title="Profile information"
-                        description="Update your name and email address"
+                        description="Update your name and phone number"
                     />
 
                     <Form
@@ -72,30 +72,31 @@ export default function Profile({
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="email">Email address</Label>
+                                    <Label htmlFor="phone">Phone number</Label>
 
                                     <Input
-                                        id="email"
-                                        type="email"
+                                        id="phone"
+                                        type="tel"
                                         className="mt-1 block w-full"
-                                        defaultValue={auth.user.email}
-                                        name="email"
+                                        defaultValue={auth.user.phone}
+                                        name="phone"
                                         required
-                                        autoComplete="username"
-                                        placeholder="Email address"
+                                        autoComplete="tel"
+                                        placeholder="+9677XXXXXXXX"
+                                        dir="ltr"
                                     />
 
                                     <InputError
                                         className="mt-2"
-                                        message={errors.email}
+                                        message={errors.phone}
                                     />
                                 </div>
 
-                                {mustVerifyEmail &&
-                                    auth.user.email_verified_at === null && (
+                                {mustVerifyPhone &&
+                                    auth.user.phone_verified_at === null && (
                                         <div>
                                             <p className="-mt-4 text-sm text-muted-foreground">
-                                                Your email address is
+                                                Your phone number is
                                                 unverified.{' '}
                                                 <Link
                                                     href={send()}
@@ -103,7 +104,7 @@ export default function Profile({
                                                     className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
                                                 >
                                                     Click here to resend the
-                                                    verification email.
+                                                    verification link.
                                                 </Link>
                                             </p>
 
@@ -111,8 +112,8 @@ export default function Profile({
                                                 'verification-link-sent' && (
                                                 <div className="mt-2 text-sm font-medium text-green-600">
                                                     A new verification link has
-                                                    been sent to your email
-                                                    address.
+                                                    been sent for your phone
+                                                    number.
                                                 </div>
                                             )}
                                         </div>

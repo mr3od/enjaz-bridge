@@ -1,11 +1,9 @@
 <?php
 
+use App\Models\OtpCode;
 use App\Models\User;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\URL;
 
-test('email verification screen can be rendered', function () {
+test('phone verification screen can be rendered', function () {
     $user = User::factory()->unverified()->create();
 
     $response = $this->actingAs($user)->get(route('verification.notice'));
@@ -13,83 +11,43 @@ test('email verification screen can be rendered', function () {
     $response->assertOk();
 });
 
-test('email can be verified', function () {
+test('phone can be verified using otp code', function () {
     $user = User::factory()->unverified()->create();
 
-    Event::fake();
+    $this->actingAs($user)
+        ->post(route('verification.send'))
+        ->assertRedirect(route('home'));
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)],
-    );
+    expect(OtpCode::query()
+        ->where('phone', $user->phone)
+        ->where('purpose', 'phone_verification')
+        ->exists())->toBeTrue();
 
-    $response = $this->actingAs($user)->get($verificationUrl);
+    $response = $this->actingAs($user)->post(route('phone-verification.store'), [
+        'code' => '123456',
+    ]);
 
-    Event::assertDispatched(Verified::class);
-    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
     $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
 });
 
-test('email is not verified with invalid hash', function () {
+test('phone is not verified with invalid otp code', function () {
     $user = User::factory()->unverified()->create();
 
-    Event::fake();
+    $this->actingAs($user)->post(route('verification.send'));
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1('wrong-email')],
-    );
+    $response = $this->actingAs($user)->post(route('phone-verification.store'), [
+        'code' => '000000',
+    ]);
 
-    $this->actingAs($user)->get($verificationUrl);
-
-    Event::assertNotDispatched(Verified::class);
-    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
-});
-
-test('email is not verified with invalid user id', function () {
-    $user = User::factory()->unverified()->create();
-
-    Event::fake();
-
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => 123, 'hash' => sha1($user->email)],
-    );
-
-    $this->actingAs($user)->get($verificationUrl);
-
-    Event::assertNotDispatched(Verified::class);
+    $response->assertSessionHasErrors('code');
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
 });
 
 test('verified user is redirected to dashboard from verification prompt', function () {
     $user = User::factory()->create();
 
-    Event::fake();
-
     $response = $this->actingAs($user)->get(route('verification.notice'));
 
-    Event::assertNotDispatched(Verified::class);
     $response->assertRedirect(route('dashboard', absolute: false));
-});
-
-test('already verified user visiting verification link is redirected without firing event again', function () {
-    $user = User::factory()->create();
-
-    Event::fake();
-
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)],
-    );
-
-    $this->actingAs($user)->get($verificationUrl)
-        ->assertRedirect(route('dashboard', absolute: false).'?verified=1');
-
-    Event::assertNotDispatched(Verified::class);
-    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
 });
