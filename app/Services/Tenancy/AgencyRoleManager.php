@@ -15,9 +15,12 @@ class AgencyRoleManager
         $originalTeamId = $this->permissionRegistrar->getPermissionsTeamId();
 
         $this->permissionRegistrar->setPermissionsTeamId($agencyId);
-        Role::findOrCreate('owner', 'web');
-        $user->assignRole('owner');
 
-        $this->permissionRegistrar->setPermissionsTeamId($originalTeamId);
+        try {
+            Role::findOrCreate('owner', 'web');
+            $user->assignRole('owner');
+        } finally {
+            $this->permissionRegistrar->setPermissionsTeamId($originalTeamId);
+        }
     }
 }

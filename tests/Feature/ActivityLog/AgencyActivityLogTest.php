@@ -1,8 +1,14 @@
 <?php
 
+use App\Models\Activity;
 use App\Models\Agency;
 use App\Models\User;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\DB;
+
+beforeEach(function (): void {
+    app(TenantContext::class)->clear();
+});
 
 test('activity rows are tagged with agency_id', function () {
     $agency = Agency::query()->create([
@@ -53,4 +59,76 @@ test('activity can be filtered by agency without tenant bleed', function () {
 
     expect($agencyARows)->toContain('agency-a-action');
     expect($agencyARows)->not->toContain('agency-b-action');
+});
+
+test('activity resolves agency from causer when no tenant context exists', function () {
+    $user = User::factory()->create();
+
+    activity()->causedBy($user)->log('queued-action');
+
+    $log = Activity::query()
+        ->where('description', 'queued-action')
+        ->latest()
+        ->firstOrFail();
+
+    expect($log->agency_id)->toBe($user->agency_id);
+});
+
+test('activity resolves agency from subject when no causer or context exists', function () {
+    $user = User::factory()->create();
+
+    activity()->performedOn($user)->log('subject-action');
+
+    $log = Activity::query()
+        ->where('description', 'subject-action')
+        ->latest()
+        ->firstOrFail();
+
+    expect($log->agency_id)->toBe($user->agency_id);
+});
+
+test('activity returns null agency for pure system logs', function () {
+    activity()->log('system-boot');
+
+    $log = Activity::query()
+        ->where('description', 'system-boot')
+        ->latest()
+        ->firstOrFail();
+
+    expect($log->agency_id)->toBeNull();
+});
+
+test('activity prefers explicit agency_id over fallback chain', function () {
+    $explicitAgency = Agency::factory()->create();
+    $causer = User::factory()->create();
+
+    activity()
+        ->causedBy($causer)
+        ->tap(function (Activity $activity) use ($explicitAgency): void {
+            $activity->agency_id = $explicitAgency->id;
+        })
+        ->log('explicit-agency');
+
+    $log = Activity::query()
+        ->where('description', 'explicit-agency')
+        ->latest()
+        ->firstOrFail();
+
+    expect($log->agency_id)->toBe($explicitAgency->id);
+});
+
+test('activity prefers tenant context over causer agency', function () {
+    $contextAgency = Agency::factory()->create();
+    $causer = User::factory()->create();
+
+    app(TenantContext::class)->setAgency($contextAgency);
+
+    activity()->causedBy($causer)->log('context-over-causer');
+
+    $log = Activity::query()
+        ->where('description', 'context-over-causer')
+        ->latest()
+        ->firstOrFail();
+
+    expect($log->agency_id)->toBe($contextAgency->id);
 });

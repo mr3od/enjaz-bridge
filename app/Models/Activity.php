@@ -14,7 +14,7 @@ class Activity extends SpatieActivity
                 return;
             }
 
-            $activity->agency_id = app(AgencyScopeResolver::class)->resolve();
+            $activity->agency_id = app(AgencyScopeResolver::class)->resolveForActivity($activity);
         });
     }
 }

@@ -4,6 +4,7 @@ namespace App\Support\Tenancy;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity as SpatieActivity;
 
 class AgencyScopeResolver
 {
@@ -26,8 +27,35 @@ class AgencyScopeResolver
         return Auth::user()?->agency_id;
     }
 
-    private function resolveFromModel(Model $model): ?string
+    public function resolveForActivity(SpatieActivity $activity): ?string
     {
+        $contextAgencyId = $this->tenantContext->agencyId();
+
+        if ($contextAgencyId !== null) {
+            return $contextAgencyId;
+        }
+
+        $causerAgencyId = $this->resolveFromModel($activity->causer);
+
+        if ($causerAgencyId !== null) {
+            return $causerAgencyId;
+        }
+
+        $subjectAgencyId = $this->resolveFromModel($activity->subject);
+
+        if ($subjectAgencyId !== null) {
+            return $subjectAgencyId;
+        }
+
+        return Auth::user()?->agency_id;
+    }
+
+    private function resolveFromModel(?Model $model): ?string
+    {
+        if ($model === null) {
+            return null;
+        }
+
         $agencyId = $model->getAttribute('agency_id');
 
         if ($agencyId !== null) {
@@ -42,8 +70,6 @@ class AgencyScopeResolver
             return $model->agency?->id;
         }
 
-        $relatedAgency = $model->agency()->first();
-
-        return $relatedAgency?->id;
+        return null;
     }
 }

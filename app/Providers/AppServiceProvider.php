@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(OtpService::class, FakeOtpService::class);
-        $this->app->singleton(TenantContext::class);
+        $this->app->scoped(TenantContext::class);
     }
 
     /**
