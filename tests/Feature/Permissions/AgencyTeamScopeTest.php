@@ -3,7 +3,12 @@
 use App\Models\Agency;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\PermissionRegistrar;
+
+afterEach(function (): void {
+    if (tenancy()->initialized) {
+        tenancy()->end();
+    }
+});
 
 test('role assignment in one agency does not leak to another', function () {
     $agencyA = Agency::query()->create([
@@ -22,11 +27,11 @@ test('role assignment in one agency does not leak to another', function () {
 
     Role::findOrCreate('owner', 'web');
 
-    app(PermissionRegistrar::class)->setPermissionsTeamId($agencyA->id);
+    tenancy()->initialize($agencyA);
     $user->assignRole('owner');
     expect($user->hasRole('owner'))->toBeTrue();
 
-    app(PermissionRegistrar::class)->setPermissionsTeamId($agencyB->id);
+    tenancy()->initialize($agencyB);
     $user->unsetRelation('roles');
     expect($user->hasRole('owner'))->toBeFalse();
 });

@@ -3,11 +3,18 @@
 use App\Models\Activity;
 use App\Models\Agency;
 use App\Models\User;
-use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\DB;
 
 beforeEach(function (): void {
-    app(TenantContext::class)->clear();
+    if (tenancy()->initialized) {
+        tenancy()->end();
+    }
+});
+
+afterEach(function (): void {
+    if (tenancy()->initialized) {
+        tenancy()->end();
+    }
 });
 
 test('activity rows are tagged with agency_id', function () {
@@ -121,7 +128,7 @@ test('activity prefers tenant context over causer agency', function () {
     $contextAgency = Agency::factory()->create();
     $causer = User::factory()->create();
 
-    app(TenantContext::class)->setAgency($contextAgency);
+    tenancy()->initialize($contextAgency);
 
     activity()->causedBy($causer)->log('context-over-causer');
 

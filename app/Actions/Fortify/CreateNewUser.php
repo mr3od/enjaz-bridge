@@ -32,30 +32,37 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return DB::transaction(function () use ($input): User {
-            $agency = Agency::query()->create([
-                'name' => $input['agency_name'],
-                'slug' => $this->uniqueSlug($input['agency_name']),
-                'city' => $input['agency_city'] ?? null,
-                'plan' => 'free',
-                'monthly_quota' => 10,
-                'used_this_month' => 0,
-                'quota_resets_at' => now()->addMonth()->startOfMonth(),
-                'is_active' => true,
-            ]);
+        try {
+            return DB::transaction(function () use ($input): User {
+                $agency = Agency::query()->create([
+                    'name' => $input['agency_name'],
+                    'slug' => $this->uniqueSlug($input['agency_name']),
+                    'city' => $input['agency_city'] ?? null,
+                    'plan' => 'free',
+                    'monthly_quota' => 10,
+                    'used_this_month' => 0,
+                    'quota_resets_at' => now()->addMonth()->startOfMonth(),
+                    'is_active' => true,
+                ]);
 
-            $user = User::query()->create([
-                'name' => $input['name'],
-                'phone' => $input['phone'],
-                'agency_id' => $agency->id,
-                'email' => $this->passwordBrokerEmail($input['phone']),
-                'password' => $input['password'],
-            ]);
+                $user = User::query()->create([
+                    'name' => $input['name'],
+                    'phone' => $input['phone'],
+                    'agency_id' => $agency->id,
+                    'email' => $this->passwordBrokerEmail($input['phone']),
+                    'password' => $input['password'],
+                ]);
 
-            $this->agencyRoleManager->assignOwner($user, $agency->id);
+                tenancy()->initialize($agency);
+                $this->agencyRoleManager->assignOwner($user, $agency->id);
 
-            return $user;
-        });
+                return $user;
+            });
+        } finally {
+            if (tenancy()->initialized) {
+                tenancy()->end();
+            }
+        }
     }
 
     private function passwordBrokerEmail(string $phone): string

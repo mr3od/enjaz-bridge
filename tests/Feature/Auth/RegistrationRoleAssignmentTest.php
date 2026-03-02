@@ -1,7 +1,12 @@
 <?php
 
 use App\Models\User;
-use Spatie\Permission\PermissionRegistrar;
+
+afterEach(function (): void {
+    if (tenancy()->initialized) {
+        tenancy()->end();
+    }
+});
 
 test('registering user gets owner role in their agency scope', function () {
     $response = $this->post(route('register.store'), [
@@ -16,7 +21,7 @@ test('registering user gets owner role in their agency scope', function () {
 
     $user = User::query()->where('phone', '+967712345679')->firstOrFail();
 
-    app(PermissionRegistrar::class)->setPermissionsTeamId($user->agency_id);
+    tenancy()->initialize($user->agency);
 
     expect($user->hasRole('owner'))->toBeTrue();
 });

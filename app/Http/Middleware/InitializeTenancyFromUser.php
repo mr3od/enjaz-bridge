@@ -1,33 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use App\Models\Agency;
-use App\Support\Tenancy\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
-class ResolveTenant
+class InitializeTenancyFromUser
 {
-    public function __construct(
-        private TenantContext $tenantContext,
-        private PermissionRegistrar $permissionRegistrar,
-    ) {}
-
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
         if ($user === null || $user->agency_id === null) {
-            $this->clearTenantContext();
             $this->logout($request);
 
             return redirect()->route('login');
@@ -39,16 +28,27 @@ class ResolveTenant
             ->first();
 
         if ($agency === null) {
-            $this->clearTenantContext();
             $this->logout($request);
 
             return redirect()->route('login');
         }
 
-        $this->tenantContext->setAgency($agency);
-        $this->permissionRegistrar->setPermissionsTeamId($agency->id);
+        tenancy()->initialize($agency);
 
-        return $next($request);
+        try {
+            return $next($request);
+        } finally {
+            if (tenancy()->initialized) {
+                tenancy()->end();
+            }
+        }
+    }
+
+    public function terminate(Request $request, Response $response): void
+    {
+        if (tenancy()->initialized) {
+            tenancy()->end();
+        }
     }
 
     private function logout(Request $request): void
@@ -56,11 +56,5 @@ class ResolveTenant
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-    }
-
-    private function clearTenantContext(): void
-    {
-        $this->tenantContext->clear();
-        $this->permissionRegistrar->setPermissionsTeamId(null);
     }
 }

@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Stancl\Tenancy\Contracts\Tenant;
 
-class Agency extends Model
+class Agency extends Model implements Tenant
 {
     use HasFactory, HasUlids;
 
@@ -48,5 +49,42 @@ class Agency extends Model
             'used_this_month' => 0,
             'quota_resets_at' => now()->addMonth()->startOfMonth(),
         ]);
+    }
+
+    public function getTenantKeyName(): string
+    {
+        return 'id';
+    }
+
+    public function getTenantKey(): mixed
+    {
+        return $this->getKey();
+    }
+
+    public function getInternal(string $key): mixed
+    {
+        return $this->getAttribute($key);
+    }
+
+    public function setInternal(string $key, mixed $value): void
+    {
+        $this->setAttribute($key, $value);
+    }
+
+    public function run(callable $callback): mixed
+    {
+        $originalTenant = tenant();
+
+        tenancy()->initialize($this);
+
+        try {
+            return $callback($this);
+        } finally {
+            if ($originalTenant !== null) {
+                tenancy()->initialize($originalTenant);
+            } else {
+                tenancy()->end();
+            }
+        }
     }
 }

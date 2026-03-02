@@ -4,12 +4,12 @@ namespace App\Providers;
 
 use App\Contracts\OtpService;
 use App\Services\OtpService\FakeOtpService;
-use App\Support\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,7 +19,6 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(OtpService::class, FakeOtpService::class);
-        $this->app->scoped(TenantContext::class);
     }
 
     /**
@@ -28,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        BelongsToTenant::$tenantIdColumn = 'agency_id';
     }
 
     /**

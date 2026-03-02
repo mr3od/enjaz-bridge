@@ -2,15 +2,12 @@
 
 namespace App\Support\Media;
 
-use App\Support\Tenancy\AgencyScopeResolver;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;
 
 class AgencyPathGenerator implements PathGenerator
 {
-    public function __construct(private AgencyScopeResolver $agencyScopeResolver) {}
-
     public function getPath(Media $media): string
     {
         return $this->basePath($media).'/';
@@ -34,7 +31,11 @@ class AgencyPathGenerator implements PathGenerator
             return "unscoped/media/{$media->id}";
         }
 
-        $agencyId = $this->agencyScopeResolver->resolve($model);
+        $agencyId = $model->getAttribute('agency_id');
+
+        if ($agencyId === null && tenancy()->initialized && tenancy()->tenant !== null) {
+            $agencyId = tenancy()->tenant->getTenantKey();
+        }
 
         if ($agencyId === null) {
             return "unscoped/media/{$media->id}";

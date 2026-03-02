@@ -5,6 +5,12 @@ use App\Models\User;
 use App\Support\Media\AgencyPathGenerator;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+afterEach(function (): void {
+    if (tenancy()->initialized) {
+        tenancy()->end();
+    }
+});
+
 test('media paths are scoped by agency', function () {
     $agency = Agency::query()->create([
         'name' => 'Media Agency',
