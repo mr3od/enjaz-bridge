@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\OtpService;
 use App\Services\OtpService\FakeOtpService;
+use App\Support\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(OtpService::class, FakeOtpService::class);
+        $this->app->singleton(TenantContext::class);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Agency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -27,6 +28,7 @@ class UserFactory extends Factory
 
         return [
             'name' => fake()->name(),
+            'agency_id' => Agency::factory(),
             'phone' => $phone,
             'email' => "{$phone}@phone.enjaz.local",
             'phone_verified_at' => now(),
