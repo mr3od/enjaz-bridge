@@ -140,6 +140,10 @@ return [
         'model' => env('AI_PASSPORT_MODEL', 'openai-responses/gpt-5-mini'),
         'real_in_tests' => (bool) env('AI_PASSPORT_REAL_IN_TESTS', false),
         'benchmark_models' => array_values(array_filter(array_map('trim', explode(',', (string) env('PASSPORT_TEST_MODELS', 'openai-responses/gpt-5-nano,openai-responses/gpt-4.1-nano,openai/gpt-4o-mini'))))),
+        'ui' => [
+            'max_batch_size' => (int) env('PASSPORT_UI_MAX_BATCH_SIZE', 10),
+            'max_file_kb' => (int) env('PASSPORT_UI_MAX_FILE_KB', 10240),
+        ],
     ],
 
 ];

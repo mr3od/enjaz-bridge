@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\ApplicantReviewController;
 use App\Http\Controllers\Auth\PhonePasswordResetController;
 use App\Http\Controllers\Auth\PhoneVerificationController;
+use App\Http\Controllers\PassportExtractionController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -11,6 +13,12 @@ Route::inertia('/', 'welcome', [
 
 Route::middleware(['auth', 'tenant.resolve', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('passport-extractions', [PassportExtractionController::class, 'index'])->name('passport-extractions.index');
+    Route::post('passport-extractions', [PassportExtractionController::class, 'store'])->name('passport-extractions.store');
+    Route::get('passport-extractions/status', [PassportExtractionController::class, 'status'])->name('passport-extractions.status');
+    Route::get('applicants/{applicant}', [ApplicantReviewController::class, 'show'])->name('applicants.show');
+    Route::patch('applicants/{applicant}', [ApplicantReviewController::class, 'update'])->name('applicants.update');
+    Route::post('applicants/{applicant}/re-extract', [ApplicantReviewController::class, 'reExtract'])->name('applicants.re-extract');
 });
 
 Route::middleware('auth')->group(function () {
