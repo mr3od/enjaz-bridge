@@ -43,12 +43,40 @@ class Agency extends Model implements Tenant
         return max(0, $this->monthly_quota - $this->used_this_month);
     }
 
+    public function hasQuota(): bool
+    {
+        $this->ensureQuotaWindowIsCurrent();
+
+        return $this->quotaRemaining() > 0;
+    }
+
+    public function tryConsumeQuota(): bool
+    {
+        $this->ensureQuotaWindowIsCurrent();
+
+        $updated = static::query()
+            ->whereKey($this->getKey())
+            ->whereColumn('used_this_month', '<', 'monthly_quota')
+            ->increment('used_this_month');
+
+        $this->refresh();
+
+        return $updated > 0;
+    }
+
     public function resetQuota(): void
     {
         $this->update([
             'used_this_month' => 0,
             'quota_resets_at' => now()->addMonth()->startOfMonth(),
         ]);
+    }
+
+    private function ensureQuotaWindowIsCurrent(): void
+    {
+        if ($this->quota_resets_at === null || $this->quota_resets_at->lessThanOrEqualTo(now())) {
+            $this->resetQuota();
+        }
     }
 
     public function getTenantKeyName(): string
