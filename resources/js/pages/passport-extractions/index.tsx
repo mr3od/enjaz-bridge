@@ -15,9 +15,12 @@ import {
     FileUp,
     RefreshCcw,
 } from 'lucide-react';
+import ApplicantReviewController from '@/actions/App/Http/Controllers/ApplicantReviewController';
+import PassportExtractionController from '@/actions/App/Http/Controllers/PassportExtractionController';
 import ExtractionStatusBadge from '@/components/extractions/extraction-status-badge';
 import QuotaMeter from '@/components/extractions/quota-meter';
 import InputError from '@/components/input-error';
+import { useI18n } from '@/hooks/use-i18n';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,21 +31,12 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
-import ApplicantReviewController from '@/actions/App/Http/Controllers/ApplicantReviewController';
-import PassportExtractionController from '@/actions/App/Http/Controllers/PassportExtractionController';
 import AppLayout from '@/layouts/app-layout';
 import type {
     BreadcrumbItem,
     ExtractionQueueItem,
     ExtractionQuotaSummary,
 } from '@/types';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Passport Extraction',
-        href: PassportExtractionController.index(),
-    },
-];
 
 type PassportExtractionIndexProps = {
     applicants: ExtractionQueueItem[];
@@ -90,6 +84,7 @@ export default function PassportExtractionIndex({
     max_file_kb,
     flash,
 }: PassportExtractionIndexProps) {
+    const { t, isRtl } = useI18n();
     const [queueItems, setQueueItems] =
         useState<ExtractionQueueItem[]>(applicants);
     const [quota, setQuota] = useState<ExtractionQuotaSummary>(initialQuota);
@@ -100,6 +95,16 @@ export default function PassportExtractionIndex({
     const form = useForm<{ files: File[] }>({
         files: [],
     });
+
+    const breadcrumbs: BreadcrumbItem[] = useMemo(
+        () => [
+            {
+                title: t('ui.passport_extraction'),
+                href: PassportExtractionController.index(),
+            },
+        ],
+        [t],
+    );
 
     useEffect(() => {
         setQueueItems(applicants);
@@ -229,17 +234,20 @@ export default function PassportExtractionIndex({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Passport Extraction" />
+            <Head title={t('ui.passport_extraction')} />
 
             <div className="space-y-6 p-4">
                 {flash?.queued_count !== undefined &&
                     flash.queued_count > 0 && (
                         <Alert>
                             <CheckCircle2 className="h-4 w-4" />
-                            <AlertTitle>Files queued</AlertTitle>
+                            <AlertTitle>
+                                {t('ui.files_queued_title')}
+                            </AlertTitle>
                             <AlertDescription>
-                                {flash.queued_count} passport image(s) were
-                                queued for extraction.
+                                {t('ui.files_queued_description', {
+                                    count: flash.queued_count,
+                                })}
                             </AlertDescription>
                         </Alert>
                     )}
@@ -247,10 +255,12 @@ export default function PassportExtractionIndex({
                 <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Batch Upload / رفع دفعة</CardTitle>
+                            <CardTitle>{t('ui.batch_upload_title')}</CardTitle>
                             <CardDescription>
-                                Upload up to {batch_limit} passport images (
-                                {Math.floor(max_file_kb / 1024)} MB max each).
+                                {t('ui.batch_upload_description', {
+                                    count: batch_limit,
+                                    size: Math.floor(max_file_kb / 1024),
+                                })}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -267,10 +277,10 @@ export default function PassportExtractionIndex({
                                 >
                                     <FileUp className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
                                     <p className="font-medium">
-                                        Drop files here / اسحب الملفات هنا
+                                        {t('ui.drop_files')}
                                     </p>
                                     <p className="mt-1 text-sm text-muted-foreground">
-                                        or choose files from your device
+                                        {t('ui.or_choose_files')}
                                     </p>
 
                                     <div className="mt-4">
@@ -290,7 +300,7 @@ export default function PassportExtractionIndex({
                                                 inputRef.current?.click()
                                             }
                                         >
-                                            Choose files
+                                            {t('ui.choose_files')}
                                         </Button>
                                     </div>
                                 </div>
@@ -298,7 +308,7 @@ export default function PassportExtractionIndex({
                                 {selectedFiles.length > 0 && (
                                     <div className="space-y-2 rounded-lg border p-3">
                                         <p className="text-sm font-medium">
-                                            Selected files / الملفات المحددة
+                                            {t('ui.selected_files')}
                                         </p>
                                         <ul className="space-y-1 text-sm text-muted-foreground">
                                             {selectedFiles.map((file) => (
@@ -326,13 +336,13 @@ export default function PassportExtractionIndex({
                                         {form.processing && (
                                             <Spinner className="mr-2" />
                                         )}
-                                        Queue extraction
+                                        {t('ui.queue_extraction')}
                                     </Button>
 
                                     {form.progress && (
                                         <p className="text-sm text-muted-foreground">
-                                            Uploading {form.progress.percentage}
-                                            %
+                                            {t('ui.uploading')}{' '}
+                                            {form.progress.percentage}%
                                         </p>
                                     )}
                                 </div>
@@ -345,39 +355,38 @@ export default function PassportExtractionIndex({
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>
-                            Extraction Queue / قائمة الاستخراج
-                        </CardTitle>
+                        <CardTitle>{t('ui.queue_title')}</CardTitle>
                         <CardDescription>
-                            Live status updates every 2 seconds while processing
-                            is active.
+                            {t('ui.queue_description')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         {queueItems.length === 0 ? (
                             <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-                                No extraction records yet.
+                                {t('ui.no_extraction_records')}
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[920px] text-sm">
                                     <thead>
-                                        <tr className="border-b text-left text-xs tracking-wide text-muted-foreground uppercase">
+                                        <tr className="border-b text-start text-xs tracking-wide text-muted-foreground uppercase">
                                             <th className="px-2 py-3">
-                                                Preview / الاسم
+                                                {t('ui.preview_name')}
                                             </th>
                                             <th className="px-2 py-3">
-                                                Status
+                                                {t('ui.status')}
                                             </th>
                                             <th className="px-2 py-3">
-                                                Started
+                                                {t('ui.started')}
                                             </th>
                                             <th className="px-2 py-3">
-                                                Finished
+                                                {t('ui.finished')}
                                             </th>
-                                            <th className="px-2 py-3">Error</th>
                                             <th className="px-2 py-3">
-                                                Actions
+                                                {t('ui.error')}
+                                            </th>
+                                            <th className="px-2 py-3">
+                                                {t('ui.actions')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -395,7 +404,13 @@ export default function PassportExtractionIndex({
                                                                 2,
                                                             ) ?? 'PP'}
                                                         </div>
-                                                        <div>
+                                                        <div
+                                                            className={
+                                                                isRtl
+                                                                    ? 'text-right'
+                                                                    : 'text-left'
+                                                            }
+                                                        >
                                                             <p className="font-medium">
                                                                 {item.surname_en ??
                                                                     '-'}{' '}
@@ -463,7 +478,7 @@ export default function PassportExtractionIndex({
                                                                 )}
                                                             >
                                                                 <Eye className="mr-1 h-3.5 w-3.5" />
-                                                                Open
+                                                                {t('ui.open')}
                                                             </Link>
                                                         </Button>
 
@@ -478,7 +493,9 @@ export default function PassportExtractionIndex({
                                                                         item.id,
                                                                     )}
                                                                 >
-                                                                    Review
+                                                                    {t(
+                                                                        'ui.review',
+                                                                    )}
                                                                 </Link>
                                                             </Button>
                                                         )}
@@ -495,7 +512,7 @@ export default function PassportExtractionIndex({
                                                                 }
                                                             >
                                                                 <RefreshCcw className="mr-1 h-3.5 w-3.5" />
-                                                                Retry
+                                                                {t('ui.retry')}
                                                             </Button>
                                                         )}
                                                     </div>

@@ -6,6 +6,7 @@ import ApplicantReviewController from '@/actions/App/Http/Controllers/ApplicantR
 import PassportExtractionController from '@/actions/App/Http/Controllers/PassportExtractionController';
 import ExtractionStatusBadge from '@/components/extractions/extraction-status-badge';
 import InputError from '@/components/input-error';
+import { useI18n } from '@/hooks/use-i18n';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -62,60 +63,74 @@ const formatDateTime = (value: string | null): string => {
     }).format(new Date(value));
 };
 
-const fieldRows: Array<{
-    key: keyof ApplicantFormData;
-    label: string;
-    type?: 'text' | 'date';
-}> = [
-    { key: 'passport_number', label: 'Passport Number / رقم الجواز' },
-    { key: 'country_code', label: 'Country Code / رمز الدولة' },
-    { key: 'sex', label: 'Sex / الجنس' },
-    { key: 'surname_en', label: 'Surname (EN) / اللقب (إنجليزي)' },
-    { key: 'given_names_en', label: 'Given Names (EN) / الأسماء (إنجليزي)' },
-    { key: 'surname_ar', label: 'Surname (AR) / اللقب (عربي)' },
-    { key: 'given_names_ar', label: 'Given Names (AR) / الأسماء (عربي)' },
-    {
-        key: 'date_of_birth',
-        label: 'Date of Birth / تاريخ الميلاد',
-        type: 'date',
-    },
-    {
-        key: 'place_of_birth_en',
-        label: 'Place of Birth (EN) / مكان الميلاد (إنجليزي)',
-    },
-    {
-        key: 'place_of_birth_ar',
-        label: 'Place of Birth (AR) / مكان الميلاد (عربي)',
-    },
-    {
-        key: 'date_of_issue',
-        label: 'Date of Issue / تاريخ الإصدار',
-        type: 'date',
-    },
-    {
-        key: 'date_of_expiry',
-        label: 'Date of Expiry / تاريخ الانتهاء',
-        type: 'date',
-    },
-    { key: 'profession_en', label: 'Profession (EN) / المهنة (إنجليزي)' },
-    { key: 'profession_ar', label: 'Profession (AR) / المهنة (عربي)' },
-    {
-        key: 'issuing_authority_en',
-        label: 'Issuing Authority (EN) / جهة الإصدار (إنجليزي)',
-    },
-    {
-        key: 'issuing_authority_ar',
-        label: 'Issuing Authority (AR) / جهة الإصدار (عربي)',
-    },
+const reviewFieldRows: Array<
+    Array<{
+        key: keyof ApplicantFormData;
+        labelKey: string;
+        type?: 'text' | 'date';
+    }>
+> = [
+    [
+        { key: 'passport_number', labelKey: 'ui.field_passport_number' },
+        { key: 'country_code', labelKey: 'ui.field_country_code' },
+    ],
+    [
+        { key: 'surname_ar', labelKey: 'ui.field_surname_ar' },
+        { key: 'surname_en', labelKey: 'ui.field_surname_en' },
+    ],
+    [
+        { key: 'given_names_ar', labelKey: 'ui.field_given_names_ar' },
+        { key: 'given_names_en', labelKey: 'ui.field_given_names_en' },
+    ],
+    [
+        { key: 'sex', labelKey: 'ui.field_sex' },
+        {
+            key: 'date_of_birth',
+            labelKey: 'ui.field_date_of_birth',
+            type: 'date',
+        },
+    ],
+    [
+        { key: 'place_of_birth_ar', labelKey: 'ui.field_place_of_birth_ar' },
+        { key: 'place_of_birth_en', labelKey: 'ui.field_place_of_birth_en' },
+    ],
+    [
+        {
+            key: 'date_of_issue',
+            labelKey: 'ui.field_date_of_issue',
+            type: 'date',
+        },
+        {
+            key: 'date_of_expiry',
+            labelKey: 'ui.field_date_of_expiry',
+            type: 'date',
+        },
+    ],
+    [
+        { key: 'profession_ar', labelKey: 'ui.field_profession_ar' },
+        { key: 'profession_en', labelKey: 'ui.field_profession_en' },
+    ],
+    [
+        {
+            key: 'issuing_authority_ar',
+            labelKey: 'ui.field_issuing_authority_ar',
+        },
+        {
+            key: 'issuing_authority_en',
+            labelKey: 'ui.field_issuing_authority_en',
+        },
+    ],
 ];
 
 export default function ApplicantShow({
     applicant,
     latest_extraction,
 }: ApplicantReviewProps) {
+    const { t } = useI18n();
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
-            title: 'Passport Extraction',
+            title: t('ui.passport_extraction'),
             href: PassportExtractionController.index(),
         },
         {
@@ -154,13 +169,13 @@ export default function ApplicantShow({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head
-                title={`Applicant ${applicant.passport_number ?? applicant.id}`}
+                title={`${t('ui.review_title')} ${applicant.passport_number ?? applicant.id}`}
             />
 
             <div className="space-y-6 p-4">
                 {applicant.extraction_error && (
                     <Alert variant="destructive">
-                        <AlertTitle>Extraction error</AlertTitle>
+                        <AlertTitle>{t('ui.error')}</AlertTitle>
                         <AlertDescription>
                             {applicant.extraction_error}
                         </AlertDescription>
@@ -170,11 +185,10 @@ export default function ApplicantShow({
                 {applicant.passport_image_url === null && (
                     <Alert variant="destructive">
                         <AlertTitle>
-                            Passport image is required for review
+                            {t('ui.missing_passport_image')}
                         </AlertTitle>
                         <AlertDescription>
-                            The uploaded source image is missing. Re-upload or
-                            re-extract before confirming data.
+                            {t('ui.missing_passport_image_description')}
                         </AlertDescription>
                     </Alert>
                 )}
@@ -185,11 +199,10 @@ export default function ApplicantShow({
                             <div className="flex items-start justify-between gap-3">
                                 <div>
                                     <CardTitle>
-                                        Applicant Review / مراجعة المتقدم
+                                        {t('ui.review_title')}
                                     </CardTitle>
                                     <CardDescription>
-                                        Review AI extraction output, then save
-                                        corrected fields.
+                                        {t('ui.review_description')}
                                     </CardDescription>
                                 </div>
                                 <ExtractionStatusBadge
@@ -199,35 +212,45 @@ export default function ApplicantShow({
                         </CardHeader>
 
                         <CardContent>
-                            <form
-                                onSubmit={submit}
-                                className="grid gap-4 md:grid-cols-2"
-                            >
-                                {fieldRows.map((field) => (
-                                    <div className="space-y-2" key={field.key}>
-                                        <Label htmlFor={field.key}>
-                                            {field.label}
-                                        </Label>
-                                        <Input
-                                            id={field.key}
-                                            type={field.type ?? 'text'}
-                                            value={String(
-                                                form.data[field.key] ?? '',
-                                            )}
-                                            onChange={(event) =>
-                                                form.setData(
-                                                    field.key,
-                                                    event.target.value,
-                                                )
-                                            }
-                                        />
-                                        <InputError
-                                            message={form.errors[field.key]}
-                                        />
+                            <form onSubmit={submit} className="space-y-4">
+                                {reviewFieldRows.map((row, rowIndex) => (
+                                    <div
+                                        key={`review-row-${rowIndex + 1}`}
+                                        className="grid gap-4 md:grid-cols-2"
+                                    >
+                                        {row.map((field) => (
+                                            <div
+                                                className="space-y-2"
+                                                key={field.key}
+                                            >
+                                                <Label htmlFor={field.key}>
+                                                    {t(field.labelKey)}
+                                                </Label>
+                                                <Input
+                                                    id={field.key}
+                                                    type={field.type ?? 'text'}
+                                                    value={String(
+                                                        form.data[field.key] ??
+                                                            '',
+                                                    )}
+                                                    onChange={(event) =>
+                                                        form.setData(
+                                                            field.key,
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={
+                                                        form.errors[field.key]
+                                                    }
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
                                 ))}
 
-                                <div className="col-span-full flex items-center gap-3 pt-2">
+                                <div className="flex items-center gap-3 pt-2">
                                     <Button
                                         disabled={
                                             form.processing ||
@@ -235,7 +258,7 @@ export default function ApplicantShow({
                                                 null
                                         }
                                     >
-                                        Save corrections
+                                        {t('ui.save_corrections')}
                                     </Button>
                                     <Transition
                                         show={form.recentlySuccessful}
@@ -245,7 +268,7 @@ export default function ApplicantShow({
                                         leaveTo="opacity-0"
                                     >
                                         <p className="text-sm text-muted-foreground">
-                                            Saved
+                                            {t('ui.saved')}
                                         </p>
                                     </Transition>
                                 </div>
@@ -256,19 +279,16 @@ export default function ApplicantShow({
                     <div className="space-y-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>
-                                    Source Image / صورة الجواز
-                                </CardTitle>
+                                <CardTitle>{t('ui.source_image')}</CardTitle>
                                 <CardDescription>
-                                    Validate extracted fields against the
-                                    uploaded passport image.
+                                    {t('ui.source_image_description')}
                                 </CardDescription>
                             </CardHeader>
 
                             <CardContent className="space-y-3">
                                 {applicant.passport_image_url === null ? (
                                     <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-                                        No passport image available.
+                                        {t('ui.no_passport_image')}
                                     </div>
                                 ) : (
                                     <>
@@ -300,7 +320,7 @@ export default function ApplicantShow({
                                                 rel="noreferrer"
                                             >
                                                 <ExternalLink className="mr-2 h-4 w-4" />
-                                                Open full size
+                                                {t('ui.open_full_size')}
                                             </a>
                                         </Button>
                                     </>
@@ -311,14 +331,14 @@ export default function ApplicantShow({
                         <Card>
                             <CardHeader>
                                 <CardTitle>
-                                    Extraction Details / تفاصيل الاستخراج
+                                    {t('ui.extraction_details')}
                                 </CardTitle>
                             </CardHeader>
 
                             <CardContent className="space-y-3 text-sm">
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground">
-                                        Requested
+                                        {t('ui.requested')}
                                     </p>
                                     <p>
                                         {formatDateTime(
@@ -328,7 +348,7 @@ export default function ApplicantShow({
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground">
-                                        Started
+                                        {t('ui.started')}
                                     </p>
                                     <p>
                                         {formatDateTime(
@@ -338,7 +358,7 @@ export default function ApplicantShow({
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground">
-                                        Finished
+                                        {t('ui.finished')}
                                     </p>
                                     <p>
                                         {formatDateTime(
@@ -349,7 +369,7 @@ export default function ApplicantShow({
 
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground">
-                                        Model
+                                        {t('ui.model')}
                                     </p>
                                     <p>
                                         {latest_extraction?.model_used ?? '-'}
@@ -357,7 +377,7 @@ export default function ApplicantShow({
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground">
-                                        Processing time
+                                        {t('ui.processing_time')}
                                     </p>
                                     <p>
                                         {latest_extraction !== null
@@ -382,7 +402,7 @@ export default function ApplicantShow({
                                         }
                                     >
                                         <RefreshCcw className="mr-2 h-4 w-4" />
-                                        Re-extract
+                                        {t('ui.re_extract')}
                                     </Button>
                                 </div>
 
@@ -396,7 +416,7 @@ export default function ApplicantShow({
                                         <Link
                                             href={PassportExtractionController.index.url()}
                                         >
-                                            Back to queue
+                                            {t('ui.back_to_queue')}
                                         </Link>
                                     </Button>
                                 </div>

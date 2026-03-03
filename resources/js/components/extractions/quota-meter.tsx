@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useI18n } from '@/hooks/use-i18n';
 import type { ExtractionQuotaSummary } from '@/types';
 
 export default function QuotaMeter({
@@ -6,6 +7,8 @@ export default function QuotaMeter({
 }: {
     quota: ExtractionQuotaSummary;
 }) {
+    const { t, isRtl } = useI18n();
+
     const percentage =
         quota.monthly_quota > 0
             ? Math.min(
@@ -19,22 +22,22 @@ export default function QuotaMeter({
     return (
         <Card>
             <CardHeader className="gap-0">
-                <CardTitle className="text-base">Quota / الحصة</CardTitle>
+                <CardTitle className="text-base">{t('ui.quota')}</CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-3">
                 <div className="flex items-end justify-between gap-4 text-sm">
                     <div>
                         <p className="text-muted-foreground">
-                            Used this month / المستخدم هذا الشهر
+                            {t('ui.used_this_month')}
                         </p>
                         <p className="text-lg font-semibold">
                             {quota.used_this_month}/{quota.monthly_quota}
                         </p>
                     </div>
-                    <div className="text-right">
+                    <div className={isRtl ? 'text-left' : 'text-right'}>
                         <p className="text-muted-foreground">
-                            Remaining / المتبقي
+                            {t('ui.remaining')}
                         </p>
                         <p className="text-lg font-semibold">
                             {quota.quota_remaining}

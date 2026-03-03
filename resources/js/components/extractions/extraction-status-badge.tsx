@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/hooks/use-i18n';
 import type { ExtractionStatus } from '@/types';
 
 const statusMeta: Record<
@@ -37,7 +38,12 @@ export default function ExtractionStatusBadge({
 }: {
     status: ExtractionStatus;
 }) {
+    const { t } = useI18n();
     const meta = statusMeta[status] ?? statusMeta.draft;
+    const translatedLabel = t(`ui.${status}`);
+    const label = translatedLabel.startsWith('ui.')
+        ? meta.label
+        : translatedLabel;
 
-    return <Badge className={meta.className}>{meta.label}</Badge>;
+    return <Badge className={meta.className}>{label}</Badge>;
 }

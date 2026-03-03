@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { BookOpen, FolderGit2, LayoutGrid, ScanSearch } from 'lucide-react';
+import { useI18n } from '@/hooks/use-i18n';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -17,35 +18,41 @@ import { dashboard } from '@/routes';
 import PassportExtractionController from '@/actions/App/Http/Controllers/PassportExtractionController';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Passport Extraction',
-        href: PassportExtractionController.index(),
-        icon: ScanSearch,
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
-
 export function AppSidebar() {
+    const { isRtl, t } = useI18n();
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: t('ui.dashboard'),
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            title: t('ui.passport_extraction'),
+            href: PassportExtractionController.index(),
+            icon: ScanSearch,
+        },
+    ];
+
+    const footerNavItems: NavItem[] = [
+        {
+            title: t('ui.repository'),
+            href: 'https://github.com/laravel/react-starter-kit',
+            icon: FolderGit2,
+        },
+        {
+            title: t('ui.documentation'),
+            href: 'https://laravel.com/docs/starter-kits#react',
+            icon: BookOpen,
+        },
+    ];
+
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar
+            side={isRtl ? 'right' : 'left'}
+            collapsible="icon"
+            variant="inset"
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

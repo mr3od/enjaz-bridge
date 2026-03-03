@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApplicantReviewController;
 use App\Http\Controllers\Auth\PhonePasswordResetController;
 use App\Http\Controllers\Auth\PhoneVerificationController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PassportExtractionController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -37,5 +38,7 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:6,1')
         ->name('phone-password.update');
 });
+
+Route::post('locale', [LocaleController::class, 'update'])->name('locale.update');
 
 require __DIR__.'/settings.php';

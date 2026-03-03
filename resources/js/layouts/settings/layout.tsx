@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/hooks/use-i18n';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
@@ -11,36 +12,36 @@ import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
 import type { NavItem } from '@/types';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Agency',
-        href: '/settings/agency',
-        icon: null,
-    },
-    {
-        title: 'Password',
-        href: editPassword(),
-        icon: null,
-    },
-    {
-        title: 'Two-factor auth',
-        href: show(),
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
-];
-
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { t } = useI18n();
+    const sidebarNavItems: NavItem[] = [
+        {
+            title: t('settings_nav_profile'),
+            href: edit(),
+            icon: null,
+        },
+        {
+            title: t('settings_nav_agency'),
+            href: '/settings/agency',
+            icon: null,
+        },
+        {
+            title: t('settings_nav_password'),
+            href: editPassword(),
+            icon: null,
+        },
+        {
+            title: t('settings_nav_two_factor'),
+            href: show(),
+            icon: null,
+        },
+        {
+            title: t('settings_nav_appearance'),
+            href: editAppearance(),
+            icon: null,
+        },
+    ];
 
     // When server-side rendering, we only render the layout on the client...
     if (typeof window === 'undefined') {
@@ -50,15 +51,15 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     return (
         <div className="px-4 py-6">
             <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
+                title={t('settings_title')}
+                description={t('settings_description')}
             />
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
+            <div className="flex flex-col gap-6 lg:flex-row lg:gap-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav
                         className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Settings"
+                        aria-label={t('settings_title')}
                     >
                         {sidebarNavItems.map((item, index) => (
                             <Button
