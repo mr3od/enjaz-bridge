@@ -135,7 +135,7 @@ export default function ApplicantShow({
         },
         {
             title: applicant.passport_number ?? applicant.id,
-            href: ApplicantReviewController.show(applicant.id),
+            href: ApplicantReviewController.show({ applicant: applicant.id }),
         },
     ];
 
@@ -161,7 +161,7 @@ export default function ApplicantShow({
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
 
-        form.patch(ApplicantReviewController.update.url(applicant.id), {
+        form.patch(ApplicantReviewController.update.url({ applicant: applicant.id }), {
             preserveScroll: true,
         });
     };
@@ -394,7 +394,7 @@ export default function ApplicantShow({
                                         onClick={() =>
                                             router.post(
                                                 ApplicantReviewController.reExtract.url(
-                                                    applicant.id,
+                                                    { applicant: applicant.id },
                                                 ),
                                                 {},
                                                 { preserveScroll: true },

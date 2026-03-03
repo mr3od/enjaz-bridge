@@ -1,26 +1,18 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
-    ChangeEvent,
-    DragEvent,
-    FormEvent,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
-import {
     AlertCircle,
     CheckCircle2,
     Eye,
     FileUp,
     RefreshCcw,
 } from 'lucide-react';
+import type { ChangeEvent, DragEvent, FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ApplicantReviewController from '@/actions/App/Http/Controllers/ApplicantReviewController';
 import PassportExtractionController from '@/actions/App/Http/Controllers/PassportExtractionController';
 import ExtractionStatusBadge from '@/components/extractions/extraction-status-badge';
 import QuotaMeter from '@/components/extractions/quota-meter';
 import InputError from '@/components/input-error';
-import { useI18n } from '@/hooks/use-i18n';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +23,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/hooks/use-i18n';
 import AppLayout from '@/layouts/app-layout';
 import type {
     BreadcrumbItem,
@@ -207,7 +200,9 @@ export default function PassportExtractionIndex({
 
     const retry = (applicantId: string): void => {
         router.post(
-            ApplicantReviewController.reExtract.url(applicantId),
+            ApplicantReviewController.reExtract.url({
+                applicant: applicantId,
+            }),
             {},
             {
                 preserveScroll: true,
@@ -411,16 +406,15 @@ export default function PassportExtractionIndex({
                                                                     : 'text-left'
                                                             }
                                                         >
-                                                            <p className="font-medium">
+                                                            {item.surname_ar ??
+                                                                '-'}{' '}
+                                                            {item.given_names_ar ??
+                                                                ''}
+                                                            <p className="font-medium"></p>
+                                                            <p className="text-xs text-muted-foreground">
                                                                 {item.surname_en ??
                                                                     '-'}{' '}
                                                                 {item.given_names_en ??
-                                                                    ''}
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {item.surname_ar ??
-                                                                    '-'}{' '}
-                                                                {item.given_names_ar ??
                                                                     ''}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">
@@ -474,7 +468,10 @@ export default function PassportExtractionIndex({
                                                         >
                                                             <Link
                                                                 href={ApplicantReviewController.show.url(
-                                                                    item.id,
+                                                                    {
+                                                                        applicant:
+                                                                            item.id,
+                                                                    },
                                                                 )}
                                                             >
                                                                 <Eye className="mr-1 h-3.5 w-3.5" />
@@ -490,7 +487,10 @@ export default function PassportExtractionIndex({
                                                             >
                                                                 <Link
                                                                     href={ApplicantReviewController.show.url(
-                                                                        item.id,
+                                                                        {
+                                                                            applicant:
+                                                                                item.id,
+                                                                        },
                                                                     )}
                                                                 >
                                                                     {t(

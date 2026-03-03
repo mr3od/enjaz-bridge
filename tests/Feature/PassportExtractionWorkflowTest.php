@@ -128,14 +128,14 @@ it('updates applicant extracted fields from review form', function (): void {
     ]);
 
     $this->actingAs($user)
-        ->patch(route('applicants.update', $applicant), [
+        ->patch(route('applicants.update', ['applicant' => $applicant]), [
             'passport_number' => 'A12345678',
             'country_code' => 'yem',
             'sex' => 'm',
             'surname_en' => 'DOE',
             'given_names_en' => 'JOHN',
         ])
-        ->assertRedirect(route('applicants.show', $applicant));
+        ->assertRedirect(route('applicants.show', ['applicant' => $applicant]));
 
     $applicant->refresh();
 
@@ -174,7 +174,7 @@ it('renders applicant review inertia payload with extraction metadata', function
     expect($passportMedia?->getPathRelativeToRoot())->toContain("agencies/{$user->agency_id}/");
 
     $this->actingAs($user)
-        ->get(route('applicants.show', $applicant))
+        ->get(route('applicants.show', ['applicant' => $applicant]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('applicants/show')
@@ -197,8 +197,8 @@ it('re-extract endpoint re-queues applicant and dispatches a job', function (): 
     ]);
 
     $this->actingAs($user)
-        ->post(route('applicants.re-extract', $applicant))
-        ->assertRedirect(route('applicants.show', $applicant));
+        ->post(route('applicants.re-extract', ['applicant' => $applicant]))
+        ->assertRedirect(route('applicants.show', ['applicant' => $applicant]));
 
     $applicant->refresh();
 

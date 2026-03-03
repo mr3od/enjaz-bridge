@@ -5,15 +5,11 @@ type SharedTranslations = {
 };
 
 type SharedI18nProps = {
-    locale?: string;
-    direction?: 'rtl' | 'ltr';
     translations?: SharedTranslations;
 };
 
 export function useI18n() {
     const page = usePage<SharedI18nProps>();
-    const locale = page.props.locale ?? 'ar';
-    const direction = page.props.direction ?? 'rtl';
     const translations = page.props.translations ?? {};
 
     const t = (
@@ -34,9 +30,9 @@ export function useI18n() {
     };
 
     return {
-        locale,
-        direction,
-        isRtl: direction === 'rtl',
+        locale: 'ar',
+        direction: 'rtl' as const,
+        isRtl: true,
         t,
     };
 }

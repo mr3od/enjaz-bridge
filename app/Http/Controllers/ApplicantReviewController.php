@@ -26,7 +26,7 @@ class ApplicantReviewController extends Controller
     {
         $applicant->update($request->validated());
 
-        return to_route('applicants.show', $applicant);
+        return to_route('applicants.show', ['applicant' => $applicant]);
     }
 
     public function reExtract(Request $request, Applicant $applicant): RedirectResponse
@@ -47,7 +47,7 @@ class ApplicantReviewController extends Controller
 
         ProcessPassportExtraction::dispatch($applicant->id, $user->id);
 
-        return to_route('applicants.show', $applicant);
+        return to_route('applicants.show', ['applicant' => $applicant]);
     }
 
     /**

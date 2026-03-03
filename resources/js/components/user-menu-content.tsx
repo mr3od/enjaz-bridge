@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { Globe, LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -10,7 +10,6 @@ import { UserInfo } from '@/components/user-info';
 import { useI18n } from '@/hooks/use-i18n';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
-import { update as updateLocale } from '@/routes/locale';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
 
@@ -19,23 +18,12 @@ type Props = {
 };
 
 export function UserMenuContent({ user }: Props) {
-    const { locale, t } = useI18n();
+    const { t } = useI18n();
     const cleanup = useMobileNavigation();
 
     const handleLogout = () => {
         cleanup();
         router.flushAll();
-    };
-
-    const changeLocale = (nextLocale: 'ar' | 'en') => {
-        cleanup();
-        router.post(
-            updateLocale(),
-            { locale: nextLocale },
-            {
-                preserveScroll: true,
-            },
-        );
     };
 
     return (
@@ -57,20 +45,6 @@ export function UserMenuContent({ user }: Props) {
                         <Settings className="mr-2" />
                         {t('ui.settings')}
                     </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    onClick={() => changeLocale('ar')}
-                    className={locale === 'ar' ? 'bg-accent' : ''}
-                >
-                    <Globe className="mr-2" />
-                    {t('ui.arabic')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    onClick={() => changeLocale('en')}
-                    className={locale === 'en' ? 'bg-accent' : ''}
-                >
-                    <Globe className="mr-2" />
-                    {t('ui.english')}
                 </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

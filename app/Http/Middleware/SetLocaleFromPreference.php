@@ -10,18 +10,7 @@ class SetLocaleFromPreference
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $supportedLocales = ['ar', 'en'];
-        $preferredLocale = (string) (
-            $request->session()->get('locale')
-            ?? $request->cookie('locale')
-            ?? config('app.locale', 'ar')
-        );
-
-        if (! in_array($preferredLocale, $supportedLocales, true)) {
-            $preferredLocale = (string) config('app.locale', 'ar');
-        }
-
-        app()->setLocale($preferredLocale);
+        app()->setLocale('ar');
 
         return $next($request);
     }

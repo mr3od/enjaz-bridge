@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useI18n } from '@/hooks/use-i18n';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { edit, update } from '@/routes/agency';
 import type { BreadcrumbItem } from '@/types';
 
 type AgencySettingsProps = {
@@ -32,13 +33,13 @@ export default function Agency({ agency }: AgencySettingsProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: t('settings_agency_breadcrumb'),
-            href: '/settings/agency',
+            href: edit(),
         },
     ];
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        form.patch('/settings/agency', {
+        form.patch(update.url(), {
             preserveScroll: true,
         });
     };

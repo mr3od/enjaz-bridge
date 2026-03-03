@@ -6,8 +6,6 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
-            locale: string;
-            direction: 'rtl' | 'ltr';
             translations: {
                 ui: Record<string, string>;
                 [key: string]: Record<string, string>;

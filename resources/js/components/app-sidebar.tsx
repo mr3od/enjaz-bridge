@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { BookOpen, FolderGit2, LayoutGrid, ScanSearch } from 'lucide-react';
-import { useI18n } from '@/hooks/use-i18n';
+import PassportExtractionController from '@/actions/App/Http/Controllers/PassportExtractionController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,8 +14,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useI18n } from '@/hooks/use-i18n';
 import { dashboard } from '@/routes';
-import PassportExtractionController from '@/actions/App/Http/Controllers/PassportExtractionController';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
