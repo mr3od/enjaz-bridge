@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ApplicantStatus;
 use App\Exceptions\QuotaExceededException;
 use App\Http\Requests\StorePassportExtractionRequest;
 use App\Jobs\ProcessPassportExtraction;
@@ -21,6 +22,7 @@ class PassportExtractionController extends Controller
     public function index(Request $request): Response
     {
         $agency = $this->currentAgency();
+        $this->markStaleProcessingAsFailed();
 
         $applicants = Applicant::query()
             ->latest()
@@ -84,6 +86,7 @@ class PassportExtractionController extends Controller
 
         $agency = $this->currentAgency();
         $ids = (array) $validated['ids'];
+        $this->markStaleProcessingAsFailed($ids);
 
         $applicants = Applicant::query()
             ->whereIn('id', $ids)
@@ -155,5 +158,25 @@ class PassportExtractionController extends Controller
         }
 
         return $tenant;
+    }
+
+    /**
+     * @param  array<int, string>|null  $ids
+     */
+    private function markStaleProcessingAsFailed(?array $ids = null): void
+    {
+        $staleMinutes = max(1, (int) config('ai.passport.ui.stale_processing_minutes', 10));
+
+        Applicant::query()
+            ->when($ids !== null, fn ($query) => $query->whereIn('id', $ids))
+            ->where('status', ApplicantStatus::Processing->value)
+            ->whereNotNull('extraction_started_at')
+            ->whereNull('extraction_finished_at')
+            ->where('extraction_started_at', '<=', now()->subMinutes($staleMinutes))
+            ->update([
+                'status' => ApplicantStatus::Failed->value,
+                'extraction_finished_at' => now(),
+                'extraction_error' => 'Extraction timed out. Queue worker may be offline; please retry.',
+            ]);
     }
 }

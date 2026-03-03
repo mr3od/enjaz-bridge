@@ -70,6 +70,34 @@ it('returns tenant scoped status payload', function (): void {
         ->assertJsonPath('quota.monthly_quota', $agencyA->monthly_quota);
 });
 
+it('marks stale processing applicants as failed during status polling', function (): void {
+    config()->set('ai.passport.ui.stale_processing_minutes', 1);
+
+    $user = User::factory()->create();
+
+    $applicant = Applicant::factory()->create([
+        'agency_id' => $user->agency_id,
+        'created_by' => $user->id,
+        'status' => ApplicantStatus::Processing->value,
+        'extraction_started_at' => now()->subMinutes(5),
+        'extraction_finished_at' => null,
+        'extraction_error' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('passport-extractions.status', [
+            'ids' => [$applicant->id],
+        ]))
+        ->assertOk()
+        ->assertJsonPath('applicants.0.status', ApplicantStatus::Failed->value);
+
+    $applicant->refresh();
+
+    expect($applicant->status)->toBe(ApplicantStatus::Failed)
+        ->and($applicant->extraction_error)->toContain('timed out')
+        ->and($applicant->extraction_finished_at)->not->toBeNull();
+});
+
 it('renders extraction index inertia payload', function (): void {
     $user = User::factory()->create();
 

@@ -143,6 +143,7 @@ return [
         'ui' => [
             'max_batch_size' => (int) env('PASSPORT_UI_MAX_BATCH_SIZE', 10),
             'max_file_kb' => (int) env('PASSPORT_UI_MAX_FILE_KB', 10240),
+            'stale_processing_minutes' => (int) env('PASSPORT_UI_STALE_PROCESSING_MINUTES', 10),
         ],
     ],
 
