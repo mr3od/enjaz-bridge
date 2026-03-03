@@ -61,8 +61,6 @@ class ApplicantReviewController extends Controller
             'enjaz_status' => $applicant->enjaz_status->value,
             'passport_number' => $applicant->passport_number,
             'country_code' => $applicant->country_code,
-            'mrz_line_1' => $applicant->mrz_line_1,
-            'mrz_line_2' => $applicant->mrz_line_2,
             'surname_ar' => $applicant->surname_ar,
             'given_names_ar' => $applicant->given_names_ar,
             'surname_en' => $applicant->surname_en,
@@ -81,6 +79,7 @@ class ApplicantReviewController extends Controller
             'extraction_requested_at' => $applicant->extraction_requested_at?->toISOString(),
             'extraction_started_at' => $applicant->extraction_started_at?->toISOString(),
             'extraction_finished_at' => $applicant->extraction_finished_at?->toISOString(),
+            'passport_image_url' => $applicant->getFirstMedia('passport')?->getUrl(),
         ];
     }
 

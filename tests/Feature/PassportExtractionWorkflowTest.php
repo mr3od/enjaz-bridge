@@ -119,6 +119,8 @@ it('updates applicant extracted fields from review form', function (): void {
 });
 
 it('renders applicant review inertia payload with extraction metadata', function (): void {
+    Storage::fake('local');
+
     $user = User::factory()->create();
 
     $applicant = Applicant::factory()->create([
@@ -134,12 +136,22 @@ it('renders applicant review inertia payload with extraction metadata', function
         'processing_ms' => 1234,
     ]);
 
+    $relativePath = UploadedFile::fake()->image('review-passport.jpg')->store('testing', 'local');
+    $absolutePath = Storage::disk('local')->path($relativePath);
+    $applicant->addMedia($absolutePath)->toMediaCollection('passport', 'local');
+
+    $passportMedia = $applicant->getFirstMedia('passport');
+
+    expect($passportMedia)->not->toBeNull();
+    expect($passportMedia?->getPathRelativeToRoot())->toContain("agencies/{$user->agency_id}/");
+
     $this->actingAs($user)
         ->get(route('applicants.show', $applicant))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('applicants/show')
             ->where('applicant.id', $applicant->id)
+            ->where('applicant.passport_image_url', fn (mixed $url) => is_string($url) && $url !== '')
             ->where('latest_extraction.model_used', 'openai-responses/gpt-5-mini')
             ->where('latest_extraction.processing_ms', 1234));
 });

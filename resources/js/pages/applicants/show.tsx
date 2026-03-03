@@ -1,6 +1,6 @@
 import { Transition } from '@headlessui/react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { RefreshCcw } from 'lucide-react';
+import { ExternalLink, RefreshCcw } from 'lucide-react';
 import type { FormEvent } from 'react';
 import ApplicantReviewController from '@/actions/App/Http/Controllers/ApplicantReviewController';
 import PassportExtractionController from '@/actions/App/Http/Controllers/PassportExtractionController';
@@ -32,8 +32,6 @@ type ApplicantReviewProps = {
 type ApplicantFormData = {
     passport_number: string;
     country_code: string;
-    mrz_line_1: string;
-    mrz_line_2: string;
     surname_ar: string;
     given_names_ar: string;
     surname_en: string;
@@ -72,8 +70,6 @@ const fieldRows: Array<{
     { key: 'passport_number', label: 'Passport Number / رقم الجواز' },
     { key: 'country_code', label: 'Country Code / رمز الدولة' },
     { key: 'sex', label: 'Sex / الجنس' },
-    { key: 'mrz_line_1', label: 'MRZ Line 1 / سطر MRZ الأول' },
-    { key: 'mrz_line_2', label: 'MRZ Line 2 / سطر MRZ الثاني' },
     { key: 'surname_en', label: 'Surname (EN) / اللقب (إنجليزي)' },
     { key: 'given_names_en', label: 'Given Names (EN) / الأسماء (إنجليزي)' },
     { key: 'surname_ar', label: 'Surname (AR) / اللقب (عربي)' },
@@ -131,8 +127,6 @@ export default function ApplicantShow({
     const form = useForm<ApplicantFormData>({
         passport_number: applicant.passport_number ?? '',
         country_code: applicant.country_code ?? '',
-        mrz_line_1: applicant.mrz_line_1 ?? '',
-        mrz_line_2: applicant.mrz_line_2 ?? '',
         surname_ar: applicant.surname_ar ?? '',
         given_names_ar: applicant.given_names_ar ?? '',
         surname_en: applicant.surname_en ?? '',
@@ -169,6 +163,18 @@ export default function ApplicantShow({
                         <AlertTitle>Extraction error</AlertTitle>
                         <AlertDescription>
                             {applicant.extraction_error}
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                {applicant.passport_image_url === null && (
+                    <Alert variant="destructive">
+                        <AlertTitle>
+                            Passport image is required for review
+                        </AlertTitle>
+                        <AlertDescription>
+                            The uploaded source image is missing. Re-upload or
+                            re-extract before confirming data.
                         </AlertDescription>
                     </Alert>
                 )}
@@ -222,7 +228,13 @@ export default function ApplicantShow({
                                 ))}
 
                                 <div className="col-span-full flex items-center gap-3 pt-2">
-                                    <Button disabled={form.processing}>
+                                    <Button
+                                        disabled={
+                                            form.processing ||
+                                            applicant.passport_image_url ===
+                                                null
+                                        }
+                                    >
                                         Save corrections
                                     </Button>
                                     <Transition
@@ -241,94 +253,156 @@ export default function ApplicantShow({
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>
-                                Extraction Details / تفاصيل الاستخراج
-                            </CardTitle>
-                        </CardHeader>
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>
+                                    Source Image / صورة الجواز
+                                </CardTitle>
+                                <CardDescription>
+                                    Validate extracted fields against the
+                                    uploaded passport image.
+                                </CardDescription>
+                            </CardHeader>
 
-                        <CardContent className="space-y-3 text-sm">
-                            <div className="space-y-1">
-                                <p className="text-muted-foreground">
-                                    Requested
-                                </p>
-                                <p>
-                                    {formatDateTime(
-                                        applicant.extraction_requested_at,
-                                    )}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-muted-foreground">Started</p>
-                                <p>
-                                    {formatDateTime(
-                                        applicant.extraction_started_at,
-                                    )}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-muted-foreground">
-                                    Finished
-                                </p>
-                                <p>
-                                    {formatDateTime(
-                                        applicant.extraction_finished_at,
-                                    )}
-                                </p>
-                            </div>
+                            <CardContent className="space-y-3">
+                                {applicant.passport_image_url === null ? (
+                                    <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+                                        No passport image available.
+                                    </div>
+                                ) : (
+                                    <>
+                                        <a
+                                            href={applicant.passport_image_url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="block overflow-hidden rounded-lg border"
+                                        >
+                                            <img
+                                                src={
+                                                    applicant.passport_image_url
+                                                }
+                                                alt="Uploaded passport"
+                                                className="h-auto w-full object-cover"
+                                            />
+                                        </a>
 
-                            <div className="space-y-1">
-                                <p className="text-muted-foreground">Model</p>
-                                <p>{latest_extraction?.model_used ?? '-'}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-muted-foreground">
-                                    Processing time
-                                </p>
-                                <p>
-                                    {latest_extraction !== null
-                                        ? `${latest_extraction.processing_ms} ms`
-                                        : '-'}
-                                </p>
-                            </div>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full"
+                                            asChild
+                                        >
+                                            <a
+                                                href={
+                                                    applicant.passport_image_url
+                                                }
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                <ExternalLink className="mr-2 h-4 w-4" />
+                                                Open full size
+                                            </a>
+                                        </Button>
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                            <div className="pt-2">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    className="w-full"
-                                    onClick={() =>
-                                        router.post(
-                                            ApplicantReviewController.reExtract.url(
-                                                applicant.id,
-                                            ),
-                                            {},
-                                            { preserveScroll: true },
-                                        )
-                                    }
-                                >
-                                    <RefreshCcw className="mr-2 h-4 w-4" />
-                                    Re-extract
-                                </Button>
-                            </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>
+                                    Extraction Details / تفاصيل الاستخراج
+                                </CardTitle>
+                            </CardHeader>
 
-                            <div>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full"
-                                    asChild
-                                >
-                                    <Link
-                                        href={PassportExtractionController.index.url()}
+                            <CardContent className="space-y-3 text-sm">
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground">
+                                        Requested
+                                    </p>
+                                    <p>
+                                        {formatDateTime(
+                                            applicant.extraction_requested_at,
+                                        )}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground">
+                                        Started
+                                    </p>
+                                    <p>
+                                        {formatDateTime(
+                                            applicant.extraction_started_at,
+                                        )}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground">
+                                        Finished
+                                    </p>
+                                    <p>
+                                        {formatDateTime(
+                                            applicant.extraction_finished_at,
+                                        )}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground">
+                                        Model
+                                    </p>
+                                    <p>
+                                        {latest_extraction?.model_used ?? '-'}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground">
+                                        Processing time
+                                    </p>
+                                    <p>
+                                        {latest_extraction !== null
+                                            ? `${latest_extraction.processing_ms} ms`
+                                            : '-'}
+                                    </p>
+                                </div>
+
+                                <div className="pt-2">
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        className="w-full"
+                                        onClick={() =>
+                                            router.post(
+                                                ApplicantReviewController.reExtract.url(
+                                                    applicant.id,
+                                                ),
+                                                {},
+                                                { preserveScroll: true },
+                                            )
+                                        }
                                     >
-                                        Back to queue
-                                    </Link>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                                        <RefreshCcw className="mr-2 h-4 w-4" />
+                                        Re-extract
+                                    </Button>
+                                </div>
+
+                                <div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-full"
+                                        asChild
+                                    >
+                                        <Link
+                                            href={PassportExtractionController.index.url()}
+                                        >
+                                            Back to queue
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </AppLayout>

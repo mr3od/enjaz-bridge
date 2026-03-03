@@ -35,8 +35,6 @@ export type ApplicantReviewData = {
     enjaz_status: string;
     passport_number: string | null;
     country_code: string | null;
-    mrz_line_1: string | null;
-    mrz_line_2: string | null;
     surname_ar: string | null;
     given_names_ar: string | null;
     surname_en: string | null;
@@ -55,4 +53,5 @@ export type ApplicantReviewData = {
     extraction_requested_at: string | null;
     extraction_started_at: string | null;
     extraction_finished_at: string | null;
+    passport_image_url: string | null;
 };
