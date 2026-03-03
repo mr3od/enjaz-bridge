@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\AgencyController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
@@ -10,6 +11,8 @@ Route::middleware(['auth', 'tenant.resolve'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('settings/agency', [AgencyController::class, 'edit'])->name('agency.edit');
+    Route::patch('settings/agency', [AgencyController::class, 'update'])->name('agency.update');
 });
 
 Route::middleware(['auth', 'tenant.resolve', 'verified'])->group(function () {
