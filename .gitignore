@@ -29,3 +29,6 @@ yarn-error.log
 
 plan.md
 stag.md
+
+# Local-only passport benchmark fixtures (PII)
+/tests/fixtures/passports/
